@@ -1,0 +1,40 @@
+GET http://localhost:8080/orders HTTP/1.1
+
+###
+
+GET http://localhost:8080/orders/2 HTTP/1.1
+
+###
+
+POST http://localhost:8080/orders HTTP/1.1
+content-type: application/json
+
+{
+  "productName": "Laptop"
+}
+
+###
+
+POST http://localhost:8080/orders HTTP/1.1
+content-type: application/json
+
+{
+  "productName": "Mobile"
+}
+###
+
+POST http://localhost:8080/orders HTTP/1.1
+content-type: application/json
+
+{
+  "productName": "Smartwatch"
+}
+
+###
+
+POST http://localhost:8080/orders HTTP/1.1
+content-type: application/json
+
+{
+  "productName": "Laptop"
+}

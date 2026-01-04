@@ -23,6 +23,7 @@ public class OrderServiceImpl implements OrderService {
         this.modelMapper = modelMapper;
     }
 
+
     @Override
     public List<OrderResponse> getAllOrders(){
         List<OrderResponse> orders = orderRepository.findAll()
@@ -44,10 +45,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse createOrder(OrderRequest orderRequest) {
-
-        if(orderRequest == null){
-            throw new BusinessException("INVALID_REQUEST", "Order cannot be null");
-        }
 
         OrderEntity orderEntity;
         try{

@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,13 +30,45 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // handleNotReadable Exception
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<BaseResponse<Object>> handleNotReadable(HttpMessageNotReadableException exception, HttpServletRequest request){
+        return ResponseBuilder.error(
+                HttpStatus.BAD_REQUEST,
+                "Request body is missing or malformed.",
+                List.of(errorItem("INVALID_REQUEST_BODY",
+                        "Request body is missing or malformed.",
+                        request))
+        );
+    }
+
+    // handleNotReadable Exception
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<BaseResponse<Object>> handleBusiness(BusinessException exception, HttpServletRequest request){
+        return ResponseBuilder.error(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal Server Error",
+                List.of(errorItem(exception.getErrorCode(), exception.getMessage(), request))
+        );
+    }
+
+    // Validation Exception
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<BaseResponse<Object>> handleValidation(
+            MethodArgumentNotValidException exception, HttpServletRequest request){
+        return ResponseBuilder.error(
+                HttpStatus.BAD_REQUEST,
+                "Validation Failed",
+                List.of(errorItem("VALIDATION_FAILED", exception.getBindingResult().getFieldError().getDefaultMessage(), request))
+        );
+    }
 
     // Generic Exception 500
-
+    @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<BaseResponse<Object>> handleAll(Exception exception, HttpServletRequest request){
         return ResponseBuilder.error(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                exception.getMessage(),
+                "Unexpected Internal Error",
                 List.of(errorItem("INTERNAL_ERROR", exception.getMessage(), request))
         );
     }

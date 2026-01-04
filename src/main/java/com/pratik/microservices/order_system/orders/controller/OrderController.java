@@ -7,6 +7,7 @@ import com.pratik.microservices.order_system.orders.dto.OrderResponse;
 import com.pratik.microservices.order_system.orders.entity.OrderEntity;
 import com.pratik.microservices.order_system.orders.repository.OrderRepository;
 import com.pratik.microservices.order_system.orders.service.OrderService;
+import jakarta.validation.Valid;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,8 +51,7 @@ public class OrderController {
 
     // post order
     @PostMapping
-    public ResponseEntity<BaseResponse<OrderResponse>> createOrder(@RequestBody OrderRequest orderRequest){
-//        return orderService.createOrder(orderRequest);
+    public ResponseEntity<BaseResponse<OrderResponse>> createOrder(@Valid @RequestBody OrderRequest orderRequest){
         return ResponseBuilder.success(
                 HttpStatus.OK,
                 "Order created successfully",

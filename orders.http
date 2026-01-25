@@ -1,8 +1,17 @@
+GET http://localhost:8085/orders HTTP/1.1
+###
+
+GET http://localhost:8090/consume/orders HTTP/1.1
+###
+
 GET http://localhost:8080/orders HTTP/1.1
+###
+
+GET http://localhost:8081/orders HTTP/1.1
 
 ###
 
-GET http://localhost:8080/orders/9 HTTP/1.1
+GET http://localhost:8080/orders/1 HTTP/1.1
 
 ###
 
@@ -16,6 +25,13 @@ content-type: application/json
 ###
 
 POST http://localhost:8080/orders HTTP/1.1
+content-type: application/json
+
+{
+  "productName": "Mobile"
+}
+###
+POST http://localhost:8081/orders HTTP/1.1
 content-type: application/json
 
 {

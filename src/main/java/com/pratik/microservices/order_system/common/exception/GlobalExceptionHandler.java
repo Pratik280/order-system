@@ -12,23 +12,46 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Resource not found 404
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<BaseResponse<Object>> handleNotFound(
-            ResourceNotFoundException exception, HttpServletRequest request){
+    public ResponseEntity<BaseResponse<Object>> handleResourceNotfound(
+        ResourceNotFoundException exception, HttpServletRequest request ){
+
+//        Map<String, Object> errors = new HashMap<>();
+//        errors.put("message", exception.getMessage());
+//        errors.put("errorCode", "RESOURCE_NOT_FOUND");
+//        errors.put("path", request.getRequestURI());
 
         return ResponseBuilder.error(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage(),
-                List.of(errorItem("RESOURCE_NOT_FOUND", exception.getMessage(), request))
+                List.of(Map.of(
+                        "code", "RESOUCE_NOT_DFOUND",
+                        "massage", exception.getMessage(),
+                        "path", request.getRequestURI()
+                ))
         );
     }
+
+
+    // Resource not found 404
+//    @ExceptionHandler(ResourceNotFoundException.class)
+//    public ResponseEntity<BaseResponse<Object>> handleNotFound(
+//            ResourceNotFoundException exception, HttpServletRequest request){
+//
+//        return ResponseBuilder.error(
+//                HttpStatus.NOT_FOUND,
+//                exception.getMessage(),
+//                List.of(errorItem("RESOURCE_NOT_FOUND", exception.getMessage(), request))
+//        );
+//    }
 
     // handleNotReadable Exception
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -81,4 +104,12 @@ public class GlobalExceptionHandler {
                 "path", request.getRequestURI()
         );
     }
+
+//    public static Map<String, Object> buildErrors(String message, String errorCode, HttpServletRequest request){
+//        Map<String, Object> errors = new HashMap<>();
+//        errors.put("message", message);
+//        errors.put("code", errorCode);
+//        errors.put("path", request.getRequestURI());
+//        return  errors;
+//    }
 }

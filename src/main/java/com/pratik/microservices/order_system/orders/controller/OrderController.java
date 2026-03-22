@@ -6,6 +6,7 @@ import com.pratik.microservices.order_system.orders.dto.OrderRequest;
 import com.pratik.microservices.order_system.orders.dto.OrderResponse;
 import com.pratik.microservices.order_system.orders.entity.OrderEntity;
 import com.pratik.microservices.order_system.orders.repository.OrderRepository;
+import com.pratik.microservices.order_system.orders.service.OrderProducer;
 import com.pratik.microservices.order_system.orders.service.OrderService;
 import jakarta.validation.Valid;
 import org.aspectj.weaver.ast.Or;
@@ -20,11 +21,13 @@ import java.util.List;
 public class OrderController {
 
     // Service Obj
-    private OrderService orderService;
+    private final OrderService orderService;
+    private final OrderProducer orderProducer;
 
     // constructor
-    public OrderController(OrderService orderService){
+    public OrderController(OrderService orderService, OrderProducer orderProducer){
         this.orderService = orderService;
+        this.orderProducer = orderProducer;
     }
 
     // get all order
@@ -52,10 +55,16 @@ public class OrderController {
     // post order
     @PostMapping
     public ResponseEntity<BaseResponse<OrderResponse>> createOrder(@Valid @RequestBody OrderRequest orderRequest){
+
+        OrderResponse response = orderService.createOrder(orderRequest);
+
+
+//        orderProducer.sendOrder(response);
+
         return ResponseBuilder.success(
                 HttpStatus.OK,
                 "Order created successfully",
-                orderService.createOrder(orderRequest)
+                response
         );
     }
 }

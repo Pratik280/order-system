@@ -1,12 +1,18 @@
 package com.pratik.microservices.order_system.orders.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pratik.microservices.order_system.common.config.JsonUtil;
+import com.pratik.microservices.order_system.common.constants.OutboxStatus;
 import com.pratik.microservices.order_system.common.exception.BusinessException;
 import com.pratik.microservices.order_system.common.exception.ResourceNotFoundException;
 import com.pratik.microservices.order_system.orders.dto.OrderRequest;
 import com.pratik.microservices.order_system.orders.dto.OrderResponse;
 import com.pratik.microservices.order_system.orders.entity.OrderEntity;
+import com.pratik.microservices.order_system.orders.entity.OutboxEventEntity;
 import com.pratik.microservices.order_system.orders.repository.OrderRepository;
+import com.pratik.microservices.order_system.orders.repository.OutboxRepository;
 import com.pratik.microservices.order_system.orders.service.OrderService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +21,20 @@ import java.util.List;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    OrderRepository orderRepository;
-    ModelMapper modelMapper;
+    private final OrderRepository orderRepository;
+    private final OutboxRepository outboxRepository;
+    private final ModelMapper modelMapper;
+    private final JsonUtil jsonUtil;
 
-    public OrderServiceImpl(OrderRepository orderRepository, ModelMapper modelMapper){
+    public OrderServiceImpl(
+            OrderRepository orderRepository,
+            ModelMapper modelMapper,
+            JsonUtil jsonUtil,
+            OutboxRepository outboxRepository ){
         this.orderRepository = orderRepository;
         this.modelMapper = modelMapper;
+        this.jsonUtil = jsonUtil;
+        this.outboxRepository = outboxRepository;
     }
 
 
@@ -44,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderResponse createOrder(OrderRequest orderRequest) {
 
         OrderEntity orderEntity;
@@ -55,6 +70,15 @@ public class OrderServiceImpl implements OrderService {
 
         try{
             OrderEntity saved = orderRepository.save(orderEntity);
+
+            // outbox for dual write problem
+
+            OutboxEventEntity event = new OutboxEventEntity();
+            event.setEventType("ORDER_CREATED");
+            event.setPayload(jsonUtil.convertToJson(saved));
+            event.setStatus(OutboxStatus.NEW);
+            outboxRepository.save(event);
+
             return modelMapper.map(saved, OrderResponse.class);
         } catch (Exception e){
             throw new BusinessException("DATA_INTEGRITY_VIOLATION", "Invalid Order Data");

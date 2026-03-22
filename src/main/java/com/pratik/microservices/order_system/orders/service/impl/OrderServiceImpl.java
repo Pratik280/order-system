@@ -69,17 +69,18 @@ public class OrderServiceImpl implements OrderService {
         }
 
         try{
-            OrderEntity saved = orderRepository.save(orderEntity);
+            OrderEntity savedEntity = orderRepository.save(orderEntity);
+            OrderResponse orderResponse = modelMapper.map(savedEntity, OrderResponse.class);
 
             // outbox for dual write problem
 
             OutboxEventEntity event = new OutboxEventEntity();
             event.setEventType("ORDER_CREATED");
-            event.setPayload(jsonUtil.convertToJson(saved));
+            event.setPayload(jsonUtil.convertToJson(orderResponse));
             event.setStatus(OutboxStatus.NEW);
             outboxRepository.save(event);
 
-            return modelMapper.map(saved, OrderResponse.class);
+            return orderResponse;
         } catch (Exception e){
             throw new BusinessException("DATA_INTEGRITY_VIOLATION", "Invalid Order Data");
         }

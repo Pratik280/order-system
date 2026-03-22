@@ -1,5 +1,6 @@
 package com.pratik.microservices.order_system.orders.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pratik.microservices.order_system.common.constants.OutboxStatus;
 import com.pratik.microservices.order_system.orders.dto.OrderResponse;
 import com.pratik.microservices.order_system.orders.entity.OutboxEventEntity;
@@ -18,10 +19,11 @@ import java.util.concurrent.CompletableFuture;
 public class OutboxPublisherImpl implements OutboxPublisher {
 
     private final OutboxRepository outboxRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, OrderResponse> kafkaTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public OutboxPublisherImpl(OutboxRepository outboxRepository,
-                           KafkaTemplate<String, String> kafkaTemplate) {
+                           KafkaTemplate<String, OrderResponse> kafkaTemplate) {
         this.outboxRepository = outboxRepository;
         this.kafkaTemplate = kafkaTemplate;
     }
@@ -32,11 +34,11 @@ public class OutboxPublisherImpl implements OutboxPublisher {
         List<OutboxEventEntity> events = outboxRepository.fetchBatchForUpdate(10);
         for(OutboxEventEntity event: events){
             try{
-
-                CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(
+                OrderResponse orderResponse = objectMapper.readValue(event.getPayload(), OrderResponse.class);
+                CompletableFuture<SendResult<String, OrderResponse>> future = kafkaTemplate.send(
                         "order-topic",
                         event.getId().toString(),
-                        event.getPayload()
+                        orderResponse
                 );
 
                 future.whenComplete((result, ex) -> {
